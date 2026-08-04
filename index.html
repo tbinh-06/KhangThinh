@@ -349,10 +349,10 @@ table.rk tr.tot td{border-top:1.5px solid var(--border-s);font-weight:700;backgr
       </div>
 
       <div class="card">
-        <div class="hd"><i class="ti ti-table"></i> Bảng thống kê vật tư <span class="s2" style="font-weight:400">· bấm vào dòng để xem lịch sử nhập kho</span></div>
-        <div style="max-height:500px;overflow:auto"><table class="rk" style="min-width:760px"><thead><tr>
+        <div class="hd"><i class="ti ti-table"></i> Bảng thống kê vật tư <span class="s2" style="font-weight:400">· bấm vào dòng để xem lịch sử nhập kho · ô càng đậm = giá trị tồn càng cao</span></div>
+        <div style="max-height:500px;overflow:auto"><table class="rk" style="min-width:840px"><thead><tr>
           <th style="width:30px"></th><th style="width:40px">STT</th><th>Tên vật tư</th><th style="width:56px">ĐVT</th>
-          <th>Nhập</th><th>Xuất</th><th>Tồn</th><th>Giá trị tồn (VND)</th>
+          <th>Nhập</th><th>Xuất</th><th>Tồn</th><th>Đơn giá (VND)</th><th>Giá trị tồn (VND)</th>
         </tr></thead><tbody id="vtBody"></tbody></table></div>
       </div>
     </section>
@@ -471,21 +471,23 @@ const TOP_HM=[
   {stt:7,ten:"Hoàn thiện",kh:10.40,tt:4.03,pct:38.7,tt2:"chamnhieu",bd:[{loai:"Vật tư",kh:7.0,tien:2.7},{loai:"Nhân công",kh:3.0,tien:1.15},{loai:"Máy thi công",kh:0.4,tien:0.18}]},
 ];
 const VT_STAT=[
-  {stt:1,ten:"Thép D16",dvt:"tấn",nhap:156.20,xuat:142.35,ton:13.85,giatri:18645000000,loai:"thep",nh:[{ngay:"02/08/2026",sln:45.0,ncc:"Hòa Phát"},{ngay:"18/07/2026",sln:62.2,ncc:"Hòa Phát"},{ngay:"05/07/2026",sln:49.0,ncc:"Thép Miền Nam"}]},
-  {stt:2,ten:"Xi măng PCB40",dvt:"tấn",nhap:98.70,xuat:92.10,ton:6.60,giatri:2574000000,loai:"betong",nh:[{ngay:"29/07/2026",sln:30.0,ncc:"Holcim"},{ngay:"10/07/2026",sln:38.7,ncc:"Holcim"},{ngay:"22/06/2026",sln:30.0,ncc:"Holcim"}]},
-  {stt:3,ten:"Cát vàng",dvt:"m3",nhap:82.50,xuat:78.60,ton:3.90,giatri:702000000,loai:"betong",nh:[{ngay:"27/07/2026",sln:28.5,ncc:"VLXD Sông Bé"},{ngay:"08/07/2026",sln:32.0,ncc:"VLXD Sông Bé"},{ngay:"20/06/2026",sln:22.0,ncc:"VLXD Sông Bé"}]},
-  {stt:4,ten:"Đá 1x2",dvt:"m3",nhap:96.30,xuat:89.40,ton:6.90,giatri:893700000,loai:"betong",nh:[{ngay:"27/07/2026",sln:33.0,ncc:"VLXD Sông Bé"},{ngay:"09/07/2026",sln:35.3,ncc:"VLXD Sông Bé"},{ngay:"19/06/2026",sln:28.0,ncc:"VLXD Sông Bé"}]},
-  {stt:5,ten:"Gạch xây",dvt:"viên",nhap:120000,xuat:112000,ton:8000,giatri:640000000,loai:"betong",nh:[{ngay:"30/07/2026",sln:40000,ncc:"Gạch Đồng Nai"},{ngay:"12/07/2026",sln:45000,ncc:"Gạch Đồng Nai"},{ngay:"25/06/2026",sln:35000,ncc:"Gạch Đồng Nai"}]},
-  {stt:6,ten:"Bê tông thương phẩm",dvt:"m3",nhap:210.50,xuat:198.20,ton:12.30,giatri:2460000000,loai:"betong",nh:[{ngay:"01/08/2026",sln:70.0,ncc:"Bê tông Bình Dương"},{ngay:"15/07/2026",sln:80.5,ncc:"Bê tông Bình Dương"},{ngay:"28/06/2026",sln:60.0,ncc:"Bê tông Bình Dương"}]},
-  {stt:7,ten:"Dây điện Cadivi",dvt:"m",nhap:25.60,xuat:23.10,ton:2.50,giatri:747500000,loai:"diennuoc",nh:[{ngay:"26/07/2026",sln:9.0,ncc:"Cadivi"},{ngay:"11/07/2026",sln:10.1,ncc:"Cadivi"},{ngay:"29/06/2026",sln:6.5,ncc:"Cadivi"}]},
-  {stt:8,ten:"Ống nhựa PVC",dvt:"m",nhap:18.30,xuat:16.40,ton:1.90,giatri:226100000,loai:"diennuoc",nh:[{ngay:"24/07/2026",sln:6.3,ncc:"Bình Minh"},{ngay:"09/07/2026",sln:7.2,ncc:"Bình Minh"},{ngay:"22/06/2026",sln:4.8,ncc:"Bình Minh"}]},
-  {stt:9,ten:"Ống nước PPR",dvt:"m",nhap:12.40,xuat:11.20,ton:1.20,giatri:165600000,loai:"diennuoc",nh:[{ngay:"23/07/2026",sln:4.2,ncc:"Bình Minh"},{ngay:"08/07/2026",sln:4.8,ncc:"Bình Minh"},{ngay:"21/06/2026",sln:3.4,ncc:"Bình Minh"}]},
-  {stt:10,ten:"Sơn nước",dvt:"lít",nhap:3.95,xuat:3.45,ton:0.50,giatri:75200000,loai:"betong",nh:[{ngay:"31/07/2026",sln:1.4,ncc:"Sơn Đại Bàng"},{ngay:"14/07/2026",sln:1.6,ncc:"Sơn Đại Bàng"},{ngay:"27/06/2026",sln:0.95,ncc:"Sơn Đại Bàng"}]},
-  {stt:11,ten:"Phụ gia bê tông",dvt:"lít",nhap:2.60,xuat:2.30,ton:0.30,giatri:44900000,loai:"betong",nh:[{ngay:"01/08/2026",sln:0.9,ncc:"Bê tông Bình Dương"},{ngay:"15/07/2026",sln:1.0,ncc:"Bê tông Bình Dương"},{ngay:"28/06/2026",sln:0.7,ncc:"Bê tông Bình Dương"}]},
-  {stt:12,ten:"Cốp pha phim",dvt:"tấm",nhap:4.20,xuat:3.60,ton:0.60,giatri:324800000,loai:"betong",nh:[{ngay:"20/07/2026",sln:1.5,ncc:"Cốp pha An Phát"},{ngay:"05/07/2026",sln:1.7,ncc:"Cốp pha An Phát"},{ngay:"18/06/2026",sln:1.0,ncc:"Cốp pha An Phát"}]},
+  {stt:1,ten:"Thép D16",dvt:"tấn",nhap:156.20,xuat:142.35,ton:13.85,dongia:18500000,loai:"thep",nh:[{ngay:"02/08/2026",sln:45.0,ncc:"Hòa Phát"},{ngay:"18/07/2026",sln:62.2,ncc:"Hòa Phát"},{ngay:"05/07/2026",sln:49.0,ncc:"Thép Miền Nam"}]},
+  {stt:2,ten:"Xi măng PCB40",dvt:"tấn",nhap:98.70,xuat:92.10,ton:6.60,dongia:1650000,loai:"betong",nh:[{ngay:"29/07/2026",sln:30.0,ncc:"Holcim"},{ngay:"10/07/2026",sln:38.7,ncc:"Holcim"},{ngay:"22/06/2026",sln:30.0,ncc:"Holcim"}]},
+  {stt:3,ten:"Cát vàng",dvt:"m3",nhap:82.50,xuat:78.60,ton:3.90,dongia:420000,loai:"betong",nh:[{ngay:"27/07/2026",sln:28.5,ncc:"VLXD Sông Bé"},{ngay:"08/07/2026",sln:32.0,ncc:"VLXD Sông Bé"},{ngay:"20/06/2026",sln:22.0,ncc:"VLXD Sông Bé"}]},
+  {stt:4,ten:"Đá 1x2",dvt:"m3",nhap:96.30,xuat:89.40,ton:6.90,dongia:390000,loai:"betong",nh:[{ngay:"27/07/2026",sln:33.0,ncc:"VLXD Sông Bé"},{ngay:"09/07/2026",sln:35.3,ncc:"VLXD Sông Bé"},{ngay:"19/06/2026",sln:28.0,ncc:"VLXD Sông Bé"}]},
+  {stt:5,ten:"Gạch xây",dvt:"viên",nhap:120000,xuat:112000,ton:8000,dongia:1650,loai:"betong",nh:[{ngay:"30/07/2026",sln:40000,ncc:"Gạch Đồng Nai"},{ngay:"12/07/2026",sln:45000,ncc:"Gạch Đồng Nai"},{ngay:"25/06/2026",sln:35000,ncc:"Gạch Đồng Nai"}]},
+  {stt:6,ten:"Bê tông thương phẩm",dvt:"m3",nhap:210.50,xuat:198.20,ton:12.30,dongia:1250000,loai:"betong",nh:[{ngay:"01/08/2026",sln:70.0,ncc:"Bê tông Bình Dương"},{ngay:"15/07/2026",sln:80.5,ncc:"Bê tông Bình Dương"},{ngay:"28/06/2026",sln:60.0,ncc:"Bê tông Bình Dương"}]},
+  {stt:7,ten:"Dây điện Cadivi",dvt:"m",nhap:25.60,xuat:23.10,ton:2.50,dongia:32000,loai:"diennuoc",nh:[{ngay:"26/07/2026",sln:9.0,ncc:"Cadivi"},{ngay:"11/07/2026",sln:10.1,ncc:"Cadivi"},{ngay:"29/06/2026",sln:6.5,ncc:"Cadivi"}]},
+  {stt:8,ten:"Ống nhựa PVC",dvt:"m",nhap:18.30,xuat:16.40,ton:1.90,dongia:28000,loai:"diennuoc",nh:[{ngay:"24/07/2026",sln:6.3,ncc:"Bình Minh"},{ngay:"09/07/2026",sln:7.2,ncc:"Bình Minh"},{ngay:"22/06/2026",sln:4.8,ncc:"Bình Minh"}]},
+  {stt:9,ten:"Ống nước PPR",dvt:"m",nhap:12.40,xuat:11.20,ton:1.20,dongia:45000,loai:"diennuoc",nh:[{ngay:"23/07/2026",sln:4.2,ncc:"Bình Minh"},{ngay:"08/07/2026",sln:4.8,ncc:"Bình Minh"},{ngay:"21/06/2026",sln:3.4,ncc:"Bình Minh"}]},
+  {stt:10,ten:"Sơn nước",dvt:"lít",nhap:3.95,xuat:3.45,ton:0.50,dongia:78000,loai:"betong",nh:[{ngay:"31/07/2026",sln:1.4,ncc:"Sơn Đại Bàng"},{ngay:"14/07/2026",sln:1.6,ncc:"Sơn Đại Bàng"},{ngay:"27/06/2026",sln:0.95,ncc:"Sơn Đại Bàng"}]},
+  {stt:11,ten:"Phụ gia bê tông",dvt:"lít",nhap:2.60,xuat:2.30,ton:0.30,dongia:65000,loai:"betong",nh:[{ngay:"01/08/2026",sln:0.9,ncc:"Bê tông Bình Dương"},{ngay:"15/07/2026",sln:1.0,ncc:"Bê tông Bình Dương"},{ngay:"28/06/2026",sln:0.7,ncc:"Bê tông Bình Dương"}]},
+  {stt:12,ten:"Cốp pha phim",dvt:"tấm",nhap:4.20,xuat:3.60,ton:0.60,dongia:485000,loai:"betong",nh:[{ngay:"20/07/2026",sln:1.5,ncc:"Cốp pha An Phát"},{ngay:"05/07/2026",sln:1.7,ncc:"Cốp pha An Phát"},{ngay:"18/06/2026",sln:1.0,ncc:"Cốp pha An Phát"}]},
 ];
+VT_STAT.forEach(v=>{v.giatri=v.dongia*v.ton;}); // giá trị tồn = đơn giá × tồn (nhất quán)
 const COCAU_XUAT=[{ten:"Thép",pct:32.4,color:cNavy},{ten:"Xi măng",pct:18.6,color:cOrange},{ten:"Bê tông",pct:16.5,color:cBlueL},{ten:"Cát, đá",pct:15.1,color:cSlate},{ten:"Gạch",pct:8.2,color:"#C7CEDA"},{ten:"Khác",pct:9.2,color:"#DDE2E9"}];
-const TOP_VT=[{ten:"Thép D16",giatri:18.65,kl:142.35,dv:"tấn"},{ten:"Xi măng PCB40",giatri:2.57,kl:92.10,dv:"tấn"},{ten:"Bê tông TP",giatri:2.46,kl:198.20,dv:"m3"},{ten:"Đá 1x2",giatri:0.89,kl:89.40,dv:"m3"},{ten:"Cát vàng",giatri:0.70,kl:78.60,dv:"m3"},{ten:"Gạch xây",giatri:0.64,kl:112.00,dv:"nghìn viên"},{ten:"Dây điện Cadivi",giatri:0.75,kl:23.10,dv:"nghìn m"},{ten:"Ống nhựa PVC",giatri:0.23,kl:16.40,dv:"nghìn m"},{ten:"Ống nước PPR",giatri:0.17,kl:11.20,dv:"nghìn m"},{ten:"Sơn nước",giatri:0.08,kl:3.45,dv:"nghìn lít"}];
+const TOP_VT=[{ten:"Thép D16",kl:142.35,dv:"tấn",dongia:18500000},{ten:"Bê tông TP",kl:198.20,dv:"m3",dongia:1250000},{ten:"Xi măng PCB40",kl:92.10,dv:"tấn",dongia:1650000},{ten:"Đá 1x2",kl:89.40,dv:"m3",dongia:390000},{ten:"Cát vàng",kl:78.60,dv:"m3",dongia:420000},{ten:"Gạch xây",kl:112.00,dv:"nghìn viên",dongia:1650000},{ten:"Dây điện Cadivi",kl:23.10,dv:"nghìn m",dongia:32000000},{ten:"Ống nhựa PVC",kl:16.40,dv:"nghìn m",dongia:28000000},{ten:"Ống nước PPR",kl:11.20,dv:"nghìn m",dongia:45000000},{ten:"Sơn nước",kl:3.45,dv:"nghìn lít",dongia:78000000}];
+TOP_VT.forEach(v=>{v.giatri=v.dongia*v.kl/1e9;}); // giá trị (tỷ) = đơn giá × khối lượng
 const NXT={nhap:[520,540,565,610,630,680,720,832],xuat:[480,500,520,560,590,630,690,793],ton:[40,40,45,50,40,50,30,38]};
 const NCC=[{ten:"Hòa Phát",giatri:18.65,pct:43.5,congno:3.20,quahan:0},{ten:"Holcim",giatri:2.57,pct:6.0,congno:0.85,quahan:12},{ten:"Tân Cảng",giatri:2.46,pct:5.7,congno:0.40,quahan:0},{ten:"Cadivi",giatri:0.75,pct:1.7,congno:0.75,quahan:38},{ten:"Bình Minh",giatri:0.60,pct:1.4,congno:0.15,quahan:0}];
 const CT_HM=[
@@ -585,6 +587,18 @@ function renderPage1(){
 }
 
 /* ============ PAGE 2 ============ */
+let topVtMode='giatri';
+function renderTopVT(f){
+  const key=topVtMode==='giatri'?'giatri':'kl';
+  const st=[...TOP_VT].sort((a,b)=>b[key]-a[key]);
+  const scale=topVtMode==='giatri'?f:1; // khối lượng không scale theo công trình ở demo
+  upsert('chTopVT',{type:'bar',data:{labels:st.map(v=>v.ten),datasets:[{data:st.map(v=>v[key]*scale),
+    backgroundColor:topVtMode==='giatri'?cNavy:cOrange,borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},
+      tooltip:{callbacks:{label:c=>{const v=st[c.dataIndex];
+        return topVtMode==='giatri'?fmt(v.giatri*scale)+' tỷ':fmt(v.kl)+' '+v.dv;}}}},
+      scales:{x:{grid:{color:cGrid}},y:{grid:{display:false},ticks:{font:{size:10},crossAlign:'far'}}}}});
+}
 function renderPage2(){
   const m=PROJECT_META[FS.congTrinh]||PROJECT_META.all; const f=m.f;
   el('kpi2').innerHTML=
@@ -594,14 +608,21 @@ function renderPage2(){
     +kpiCard('ti-coin','Giá trị tồn kho',fmt(42.78*f),'tỷ VND',delta(-3.2),'So kỳ trước '+fmt(44.20*f)+' tỷ');
 
   const filtered=(FS.nhomVT==='all')?VT_STAT:VT_STAT.filter(v=>v.loai===FS.nhomVT);
+  const maxG=Math.max.apply(null,filtered.map(v=>v.giatri));
+  const heat=g=>{ // thang căn bậc hai cho mượt, cam đậm dần
+    const a=0.08+0.62*Math.sqrt(g/maxG);
+    const dark=a>0.45;
+    return 'background:rgba(240,128,30,'+a.toFixed(2)+')'+(dark?';color:#fff;font-weight:600':';font-weight:600');
+  };
   let tN=0,tX=0,tT=0,tG=0;
   el('vtBody').innerHTML=filtered.map(v=>{
     tN+=v.nhap*f;tX+=v.xuat*f;tT+=v.ton*f;tG+=v.giatri*f;
+    const dongia = v.dongia; // đơn giá cố định, không đổi theo scale công trình
     const sub=v.nh.map((n,j)=>{const gl=v.nhap>0?v.giatri*f*(n.sln/v.nhap):0;
-      return '<tr class="subrow" data-key="vt'+v.stt+'" style="display:none"><td></td><td>'+(j+1)+'</td><td>'+n.ngay+' · '+n.ncc+'</td><td>'+v.dvt+'</td><td class="mono">'+fmt(n.sln*f)+'</td><td class="mono">—</td><td class="mono">—</td><td class="mono">'+fmt(gl)+'</td></tr>';}).join('');
-    return '<tr class="prow" data-key="vt'+v.stt+'"><td>'+caret()+'</td><td>'+v.stt+'</td><td>'+v.ten+'</td><td>'+v.dvt+'</td><td class="mono">'+fmt(v.nhap*f)+'</td><td class="mono">'+fmt(v.xuat*f)+'</td><td class="mono">'+fmt(v.ton*f)+'</td><td class="mono">'+fmt(v.giatri*f)+'</td></tr>'+sub;
+      return '<tr class="subrow" data-key="vt'+v.stt+'" style="display:none"><td></td><td>'+(j+1)+'</td><td>'+n.ngay+' · '+n.ncc+'</td><td>'+v.dvt+'</td><td class="mono">'+fmt(n.sln*f)+'</td><td class="mono">—</td><td class="mono">—</td><td class="mono">'+fmt(dongia)+'</td><td class="mono">'+fmt(gl)+'</td></tr>';}).join('');
+    return '<tr class="prow" data-key="vt'+v.stt+'"><td>'+caret()+'</td><td>'+v.stt+'</td><td>'+v.ten+'</td><td>'+v.dvt+'</td><td class="mono">'+fmt(v.nhap*f)+'</td><td class="mono">'+fmt(v.xuat*f)+'</td><td class="mono">'+fmt(v.ton*f)+'</td><td class="mono">'+fmt(dongia)+'</td><td class="mono" style="'+heat(v.giatri)+'">'+fmt(v.giatri*f)+'</td></tr>'+sub;
   }).join('')
-    +'<tr class="tot"><td></td><td colspan="3">TỔNG CỘNG'+(FS.nhomVT!=='all'?' (đã lọc)':'')+'</td><td class="mono">'+fmt(tN)+'</td><td class="mono">'+fmt(tX)+'</td><td class="mono">'+fmt(tT)+'</td><td class="mono">'+fmt(tG)+'</td></tr>';
+    +'<tr class="tot"><td></td><td colspan="3">TỔNG CỘNG'+(FS.nhomVT!=='all'?' (đã lọc)':'')+'</td><td class="mono">'+fmt(tN)+'</td><td class="mono">'+fmt(tX)+'</td><td class="mono">'+fmt(tT)+'</td><td class="mono">—</td><td class="mono">'+fmt(tG)+'</td></tr>';
   drill('vtBody');
 
   upsert('chNXT',{type:'line',data:{labels:MONTHS8,datasets:[
@@ -615,9 +636,7 @@ function renderPage2(){
     options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.label+': '+c.parsed+'%'}}}}});
   el('legendXuat').innerHTML=COCAU_XUAT.map(c=>'<div class="li"><span class="dot" style="background:'+c.color+'"></span><span class="txt">'+c.ten+'</span><span class="num">'+c.pct+'%</span></div>').join('');
 
-  const st=[...TOP_VT].sort((a,b)=>b.giatri-a.giatri);
-  upsert('chTopVT',{type:'bar',data:{labels:st.map(v=>v.ten),datasets:[{data:st.map(v=>v.giatri*f),backgroundColor:cNavy,borderRadius:4}]},
-    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmt(c.parsed.x)+' tỷ'}}},scales:{x:{grid:{color:cGrid}},y:{grid:{display:false},ticks:{font:{size:10},crossAlign:'far'}}}}});
+  renderTopVT(f);
 
   let nT=0,nP=0,nC=0;
   el('nccBody').innerHTML=NCC.map(n=>{nT+=n.giatri*f;nP+=n.pct;nC+=n.congno*f;
@@ -732,6 +751,12 @@ el('fReset').addEventListener('click',()=>{
   el('fFrom').value='2026-01-01';el('fTo').value='2026-08-31';
   reRender();
 });
+
+document.querySelectorAll('.topvt-tab').forEach(b=>b.addEventListener('click',()=>{
+  topVtMode=b.dataset.mode;
+  document.querySelectorAll('.topvt-tab').forEach(x=>x.classList.toggle('on',x===b));
+  const m=PROJECT_META[FS.congTrinh]||PROJECT_META.all; renderTopVT(m.f);
+}));
 
 showPage('p1');
 </script>
