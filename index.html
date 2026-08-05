@@ -15,15 +15,24 @@
   --border-t:#E2E7F0;
 }
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#F4F6FA;color:var(--tx-primary);font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;display:flex;flex-direction:column}
-.topbar{background:#fff;border-bottom:0.5px solid var(--border-t);padding:14px 40px;display:flex;align-items:center;gap:14px}
-.topbar img.blogo{height:46px;width:auto}
-.topbar .sub{font-size:11px;color:var(--tx-tertiary);letter-spacing:.4px}
-.wrap{flex:1;display:flex;flex-direction:column;align-items:center;padding:48px 24px}
+body{color:var(--tx-primary);font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;display:flex;flex-direction:column;
+  background:
+    radial-gradient(900px 420px at 12% -8%, rgba(240,128,30,0.10), transparent 60%),
+    radial-gradient(1000px 520px at 100% 0%, rgba(22,41,77,0.12), transparent 55%),
+    linear-gradient(180deg,#F7F9FC 0%, #EEF2F8 100%);
+  background-attachment:fixed}
+.wrap::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(22,41,77,0.035) 1px,transparent 1px),linear-gradient(90deg,rgba(22,41,77,0.035) 1px,transparent 1px);
+  background-size:44px 44px;mask-image:linear-gradient(180deg,rgba(0,0,0,0.5),transparent 70%)}
+.wrap{position:relative}
+.groups,.hero{position:relative;z-index:1}
+.topbar{background:#fff;border-bottom:0.5px solid var(--border-t);padding:16px 40px;display:flex;align-items:center;gap:16px}
+.topbar img.blogo{height:60px;width:auto}
+.topbar .sub{font-size:11.5px;color:var(--tx-tertiary);letter-spacing:.4px;font-weight:500}
+.wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:52px 24px}
 .hero{text-align:center;margin-bottom:38px;max-width:640px}
-.hero img.hlogo{height:88px;width:auto;margin-bottom:18px}
-.hero h1{font-size:26px;font-weight:800;color:var(--navy);letter-spacing:-.3px;margin-bottom:10px}
-.hero p{font-size:14px;color:var(--tx-secondary);line-height:1.6}
+.hero h1{font-size:34px;font-weight:800;color:var(--navy);letter-spacing:-.4px;margin-bottom:12px}
+.hero p{font-size:14.5px;color:var(--tx-secondary);line-height:1.6}
 .groups{display:flex;flex-direction:column;gap:34px;width:100%;max-width:1080px}
 .group-hd{display:flex;align-items:center;gap:12px;margin-bottom:2px}
 .group-hd .gi{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
@@ -31,7 +40,7 @@ body{background:#F4F6FA;color:var(--tx-primary);font-family:'Inter',-apple-syste
 .group-hd .gs{font-size:11.5px;color:var(--tx-tertiary)}
 .group-hd .line{flex:1;height:0.5px;background:var(--border-t)}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:22px;width:100%}
-.box{background:#fff;border:0.5px solid var(--border-t);border-radius:18px;padding:28px 26px;text-decoration:none;color:inherit;display:flex;flex-direction:column;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;position:relative;overflow:hidden}
+.box{background:#fff;border:0.5px solid var(--border-t);border-radius:18px;padding:28px 26px;text-decoration:none;color:inherit;display:flex;flex-direction:column;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;position:relative;overflow:hidden;box-shadow:0 4px 16px rgba(16,31,61,0.05)}
 .box::after{content:'';position:absolute;left:0;top:0;height:4px;width:100%;background:var(--accent)}
 .box:hover{transform:translateY(-4px);box-shadow:0 14px 34px rgba(16,31,61,0.13);border-color:var(--accent)}
 .box .ic{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:18px;background:var(--accent-bg);color:var(--accent)}
@@ -52,12 +61,6 @@ body{background:#F4F6FA;color:var(--tx-primary);font-family:'Inter',-apple-syste
   </div>
 
   <div class="wrap">
-    <div class="hero">
-      <img class="hlogo" src="khang_thinh_logo.png" alt="Nhà thép Khang Thịnh">
-      <h1>Hệ thống báo cáo quản trị</h1>
-      <p>Chọn báo cáo để xem chi tiết. Số liệu tổng hợp từ CRM, sổ đơn hàng, sổ kho và sổ quỹ của Khang Thịnh — nhà máy sản xuất &amp; thi công lắp dựng kết cấu thép.</p>
-    </div>
-
     <div class="groups">
       <div>
         <div class="group-hd">
