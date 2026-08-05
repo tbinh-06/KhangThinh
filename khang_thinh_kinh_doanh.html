@@ -318,8 +318,7 @@ function renderTQ(){
   const planTotal=KD_PLAN.daky.reduce((a,b)=>a+b,0)*sc;
   const datKH=planTotal>0?daky/planTotal*100:0;
   el('kdKpi').innerHTML=
-    kpiCard('ti-users','Khách hàng / CĐT',fmt0(soKH),'KH',delta(8.0),'Có phát sinh giao dịch')
-    +kpiCard('ti-file-invoice','Báo giá đã gửi',fmt0(soBG),'báo giá',delta(12.4),'BQ '+fmt(soKH>0?soBG/soKH:0)+' /KH')
+    kpiCard('ti-file-invoice','Báo giá đã gửi',fmt0(soBG),'báo giá',delta(12.4),'BQ '+fmt(soKH>0?soBG/soKH:0)+' /KH')
     +kpiCard('ti-file-dollar','Giá trị báo giá',fmt0(dukien),'tr',delta(11.0),'Tổng pipeline')
     +kpiCard('ti-signature','Hợp đồng đã ký',fmt0(daky),'tr',delta(9.6),fmt0(tan)+' tấn thép')
     +kpiCard('ti-target','Đạt kế hoạch',datKH.toFixed(0),'%',null,'KH '+fmt0(planTotal)+' tr · '+(daky>=planTotal?'vượt':'thiếu '+fmt0(planTotal-daky)+' tr'))
