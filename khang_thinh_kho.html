@@ -145,7 +145,7 @@ table.rk tr.tot td{border-top:1.5px solid var(--border-s);font-weight:700;backgr
       <div class="filterbar">
         <div class="fitem"><span class="flabel">Nhóm vật tư</span>
           <select class="fsel" id="fNhom"><option value="all">Tất cả nhóm</option></select></div>
-        <div class="fitem"><span class="flabel">Dự án / đơn hàng</span>
+        <div class="fitem" id="fDAItem" style="display:none"><span class="flabel">Dự án / đơn hàng</span>
           <select class="fsel" id="fDA"><option value="all">Tất cả dự án</option></select></div>
         <div class="fitem"><span class="flabel">Trạng thái tồn</span>
           <select class="fsel" id="fTt">
@@ -376,11 +376,10 @@ function renderTQ(){
     +kpiCard('ti-alert-triangle','Tồn thấp',fmt0(lowN),'loại',null,lowN?'Cần nhập bổ sung':'Ổn định')
     +kpiCard('ti-clock-pause','Ứ đọng',fmt0(overN),'loại',null,overN?'Vốn đang đọng':'Không có');
 
-  // Donut giá trị tồn theo nhóm
+  // Donut giá trị tồn theo nhóm (theo bộ lọc)
   const nhomKeys=Object.keys(NHOM_META);
-  const nhomData=nhomKeys.map(k=>({name:NHOM_META[k].n,c:NHOM_META[k].c,v:allCalc.filter(v=>v.nhom===k).reduce((a,v)=>a+v.gtTon,0)})).filter(d=>d.v>0);
-  const totAll=allCalc.reduce((a,v)=>a+v.gtTon,0);
-  el('tqNhomTotal').textContent=fmt(totAll/1000);
+  const nhomData=nhomKeys.map(k=>({name:NHOM_META[k].n,c:NHOM_META[k].c,v:list.filter(v=>v.nhom===k).reduce((a,v)=>a+v.gtTon,0)})).filter(d=>d.v>0);
+  el('tqNhomTotal').textContent=fmt(totGtTon/1000);
   upsert('tqNhom',{type:'doughnut',data:{labels:nhomData.map(d=>d.name),datasets:[{data:nhomData.map(d=>d.v),backgroundColor:nhomData.map(d=>d.c),borderWidth:2,borderColor:'#fff'}]},
     options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.label+': '+fmt0(c.parsed)+' tr'}}}}});
   el('tqNhomLeg').innerHTML=nhomData.map(d=>'<div class="li"><span class="dot" style="background:'+d.c+'"></span><span class="txt">'+d.name+'</span><span class="num">'+fmt0(d.v)+' tr</span></div>').join('');
@@ -396,14 +395,15 @@ function renderTQ(){
       +'<div class="alert-val '+(low?'dn':'')+'" style="color:'+(low?cRed:cAmber)+'">'+(low?'Cần nhập':'Ứ đọng')+'</div></div>';
   }).join('') : '<div class="s2" style="padding:24px 0;text-align:center"><i class="ti ti-circle-check" style="font-size:22px;color:var(--tx-success);display:block;margin-bottom:6px"></i>Tất cả vật tư đang trong ngưỡng an toàn.</div>';
 
-  // Nhập-xuất theo tháng
-  const nhap = wmMode==='val'?WH_MONTH.valNhap:WH_MONTH.tonNhap;
-  const xuat = wmMode==='val'?WH_MONTH.valXuat:WH_MONTH.tonXuat;
+  // Nhập-xuất theo tháng (scale theo tỷ trọng nhóm đang lọc)
+  const totAll=allCalc.reduce((a,v)=>a+v.gtTon,0);
+  const whScale=totAll>0?totGtTon/totAll:1;
+  const nhap = (wmMode==='val'?WH_MONTH.valNhap:WH_MONTH.tonNhap).map(v=>Math.round(v*whScale));
+  const xuat = (wmMode==='val'?WH_MONTH.valXuat:WH_MONTH.tonXuat).map(v=>Math.round(v*whScale));
   const unit = wmMode==='val'?'tr':'tấn';
-  let ton=[]; let running = wmMode==='val'?totGtTon*0.6:list.reduce((a,v)=>a+v.ton,0)*0.6;
-  // tồn cuối kỳ tích lũy đơn giản
-  let base = wmMode==='val'? 9000 : 560;
-  for(let i=0;i<8;i++){ base += nhap[i]-xuat[i]; ton.push(base); }
+  let ton=[];
+  let base = (wmMode==='val'? 9000 : 560)*whScale;
+  for(let i=0;i<8;i++){ base += nhap[i]-xuat[i]; ton.push(Math.round(base)); }
   upsert('tqMonth',{data:{labels:MONTHS8,datasets:[
     {type:'bar',label:'Nhập',data:nhap,backgroundColor:cGreen,borderRadius:4,order:2},
     {type:'bar',label:'Xuất',data:xuat,backgroundColor:cOrange,borderRadius:4,order:2},
@@ -413,14 +413,14 @@ function renderTQ(){
       scales:{y:{grid:{color:cGrid},ticks:{callback:v=>fmt0(v)}},x:{grid:{display:false}}}}});
   document.querySelectorAll('.wm-tab').forEach(b=>b.classList.toggle('on',b.dataset.v===wmMode));
 
-  // Vòng quay & số ngày tồn theo nhóm
+  // Vòng quay & số ngày tồn theo nhóm (theo bộ lọc)
   const turnData=nhomKeys.map(k=>{
-    const grp=allCalc.filter(v=>v.nhom===k);
+    const grp=list.filter(v=>v.nhom===k);
     const xuatVal=grp.reduce((a,v)=>a+v.xuat*v.gia,0);
     const tonVal=grp.reduce((a,v)=>a+v.gtTon,0);
     const days=xuatVal>0?Math.round(tonVal/(xuatVal/243)):0; // 243 ngày YTD
     return {name:NHOM_META[k].n,c:NHOM_META[k].c,days};
-  });
+  }).filter(d=>d.days>0);
   upsert('tqTurn',{type:'bar',data:{labels:turnData.map(d=>d.name),datasets:[{data:turnData.map(d=>d.days),backgroundColor:turnData.map(d=>d.c),borderRadius:4}]},
     options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.x+' ngày tồn kho'}}},
       scales:{x:{grid:{color:cGrid},ticks:{callback:v=>v+'d'}},y:{grid:{display:false},ticks:{font:{size:10.5},crossAlign:'far'}}}}});
@@ -520,6 +520,9 @@ function showPage(id){
   document.querySelectorAll('.page').forEach(p=>p.style.display='none');
   el('page-'+id).style.display='block';
   document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.page===id));
+  // Filter dự án chỉ áp dụng ở trang Xuất - nhập kho
+  el('fDAItem').style.display = id==='xk' ? '' : 'none';
+  if(id!=='xk'){ FS.da='all'; el('fDA').value='all'; }
   if(id==='tq')renderTQ(); if(id==='xk')renderXK();
 }
 document.querySelectorAll('#nav button').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
