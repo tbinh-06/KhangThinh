@@ -145,6 +145,8 @@ table.rk tr.tot td{border-top:1.5px solid var(--border-s);font-weight:700;backgr
       <div class="filterbar">
         <div class="fitem"><span class="flabel">Nhóm vật tư</span>
           <select class="fsel" id="fNhom"><option value="all">Tất cả nhóm</option></select></div>
+        <div class="fitem"><span class="flabel">Dự án / đơn hàng</span>
+          <select class="fsel" id="fDA"><option value="all">Tất cả dự án</option></select></div>
         <div class="fitem"><span class="flabel">Trạng thái tồn</span>
           <select class="fsel" id="fTt">
             <option value="all">Tất cả</option>
@@ -336,8 +338,10 @@ const XK_ORDER=[
 
 /* populate nhom filter */
 (function(){ const s=el('fNhom'); Object.keys(NHOM_META).forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=NHOM_META[k].n;s.appendChild(o);}); })();
+/* populate dự án filter (theo XK_ORDER) */
+(function(){ const s=el('fDA'); XK_ORDER.forEach(o=>{const op=document.createElement('option');op.value=o.id;op.textContent=o.id+' · '+o.da;s.appendChild(op);}); })();
 
-const FS={nhom:'all', tt:'all'};
+const FS={nhom:'all', tt:'all', da:'all'};
 // tính toán 1 NVL
 function calc(v){
   const ton=v.dau+v.nhap-v.xuat;
@@ -450,8 +454,8 @@ function renderWhTable(){
 
 /* ============ TRANG 2: XUẤT - NHẬP KHO ============ */
 function xkFiltered(){
-  // lọc theo nhóm: giữ đơn có ít nhất 1 item thuộc nhóm; giá trị hiển thị vẫn full đơn
-  return XK_ORDER.filter(o=>FS.nhom==='all'||o.items.some(it=>it.nhom===FS.nhom));
+  // lọc theo nhóm + dự án
+  return XK_ORDER.filter(o=>(FS.da==='all'||o.id===FS.da) && (FS.nhom==='all'||o.items.some(it=>it.nhom===FS.nhom)));
 }
 function renderXK(){
   renderWhTable();
@@ -521,8 +525,9 @@ function showPage(id){
 document.querySelectorAll('#nav button').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
 function reRender(){ if(currentPage==='tq')renderTQ(); if(currentPage==='xk')renderXK(); }
 el('fNhom').addEventListener('change',e=>{FS.nhom=e.target.value;reRender();});
+el('fDA').addEventListener('change',e=>{FS.da=e.target.value;reRender();});
 el('fTt').addEventListener('change',e=>{FS.tt=e.target.value;reRender();});
-el('fReset').addEventListener('click',()=>{FS.nhom='all';FS.tt='all';el('fNhom').value='all';el('fTt').value='all';el('fFrom').value='2026-01-01';el('fTo').value='2026-08-31';reRender();});
+el('fReset').addEventListener('click',()=>{FS.nhom='all';FS.tt='all';FS.da='all';el('fNhom').value='all';el('fDA').value='all';el('fTt').value='all';el('fFrom').value='2026-01-01';el('fTo').value='2026-08-31';reRender();});
 document.querySelectorAll('.wm-tab').forEach(b=>b.addEventListener('click',()=>{wmMode=b.dataset.v;renderTQ();}));
 
 showPage('tq');
