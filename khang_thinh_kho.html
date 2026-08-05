@@ -210,22 +210,9 @@ table.rk tr.tot td{border-top:1.5px solid var(--border-s);font-weight:700;backgr
     <!-- TRANG 2: XUẤT - NHẬP KHO -->
     <section class="page" id="page-xk">
       <div class="titlebar">
-        <div><span class="t">Xuất - nhập kho</span> <span class="sub">· Bảng xuất-nhập-tồn · Phiếu xuất theo đơn / dự án · ĐVT: tấn · triệu đồng</span></div>
+        <div><span class="t">Xuất - nhập kho</span> <span class="sub">· Phiếu xuất theo đơn / dự án · Bảng xuất-nhập-tồn · ĐVT: tấn · triệu đồng</span></div>
         <span class="frange"><i class="ti ti-calendar"></i> 01/01 → 31/08/2026</span>
       </div>
-
-      <div class="card" style="margin-bottom:14px">
-        <div class="hd" style="justify-content:space-between;flex-wrap:wrap;gap:8px">
-          <span><i class="ti ti-list-details"></i> Bảng tổng hợp xuất - nhập - tồn <span class="s2" style="font-weight:400">· bấm vào dòng để xem lô nhập / phiếu xuất</span></span>
-        </div>
-        <div style="max-height:460px;overflow:auto"><table class="rk" style="min-width:1040px"><thead><tr>
-          <th style="width:30px"></th><th>Vật tư</th><th>Nhóm</th><th>ĐVT</th>
-          <th>Tồn đầu</th><th>Nhập</th><th>Xuất</th><th>Tồn cuối</th><th>Định mức min</th><th>Giá trị tồn</th><th style="width:120px">Trạng thái</th>
-        </tr></thead><tbody id="theBody"></tbody></table></div>
-        <div class="s2" style="margin-top:8px">Tồn cuối = Tồn đầu + Nhập − Xuất. <b>Trạng thái:</b> Tồn thấp = dưới định mức tối thiểu (cần nhập) · Ứ đọng = tồn cao gấp &gt;3× định mức (vốn đọng) · Bình thường = trong ngưỡng an toàn.</div>
-      </div>
-
-      <div style="font-size:11px;font-weight:600;color:var(--tx-tertiary);text-transform:uppercase;letter-spacing:.6px;margin:16px 2px 12px;display:flex;align-items:center;gap:8px"><i class="ti ti-arrow-bar-to-down" style="font-size:14px"></i> Xuất kho theo đơn / dự án</div>
 
       <div class="kpi-grid" id="xkKpi"></div>
 
@@ -245,12 +232,25 @@ table.rk tr.tot td{border-top:1.5px solid var(--border-s);font-weight:700;backgr
           </div>
         </div>
       </div>
-      <div class="card">
+      <div class="card" style="margin-bottom:14px">
         <div class="hd"><i class="ti ti-clipboard-list"></i> Chi tiết phiếu xuất kho theo đơn <span class="s2" style="font-weight:400">· bấm vào dòng để xem vật tư đã xuất</span></div>
         <div style="max-height:520px;overflow:auto"><table class="rk" style="min-width:920px"><thead><tr>
           <th style="width:30px"></th><th>Mã đơn / Dự án</th><th>Chủ đầu tư</th>
           <th>Số phiếu xuất</th><th>Khối lượng (tấn)</th><th>Giá trị NVL</th><th>% trên giá trị đơn</th><th style="width:120px">Trạng thái</th>
         </tr></thead><tbody id="xkBody"></tbody></table></div>
+      </div>
+
+      <div style="font-size:11px;font-weight:600;color:var(--tx-tertiary);text-transform:uppercase;letter-spacing:.6px;margin:16px 2px 12px;display:flex;align-items:center;gap:8px"><i class="ti ti-clipboard-data" style="font-size:14px"></i> Tổng hợp xuất - nhập - tồn kho</div>
+
+      <div class="card">
+        <div class="hd" style="justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <span><i class="ti ti-list-details"></i> Bảng tổng hợp xuất - nhập - tồn <span class="s2" style="font-weight:400">· bấm vào dòng để xem lô nhập / phiếu xuất</span></span>
+        </div>
+        <div style="max-height:520px;overflow:auto"><table class="rk" style="min-width:1040px"><thead><tr>
+          <th style="width:30px"></th><th>Vật tư</th><th>Nhóm</th><th>ĐVT</th>
+          <th>Tồn đầu</th><th>Nhập</th><th>Xuất</th><th>Tồn cuối</th><th>Định mức min</th><th>Giá trị tồn</th><th style="width:120px">Trạng thái</th>
+        </tr></thead><tbody id="theBody"></tbody></table></div>
+        <div class="s2" style="margin-top:8px">Tồn cuối = Tồn đầu + Nhập − Xuất. <b>Trạng thái:</b> Tồn thấp = dưới định mức tối thiểu (cần nhập) · Ứ đọng = tồn cao gấp &gt;3× định mức (vốn đọng) · Bình thường = trong ngưỡng an toàn.</div>
       </div>
     </section>
 
