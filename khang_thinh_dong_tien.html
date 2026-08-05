@@ -102,8 +102,13 @@ table.hm th:first-child,table.hm td:first-child{text-align:left}
           <select class="fsel" id="fCT"><option value="all">Tất cả công trình</option></select></div>
         <div class="fitem"><span class="flabel">Kỳ báo cáo</span>
           <select class="fsel" id="fPeriod">
-            <option>Lũy kế từ đầu năm</option><option>Quý II/2026</option><option>Tháng 05/2026</option><option>Năm 2026</option>
+            <option value="ytd">Lũy kế từ đầu năm</option><option value="q2">Quý II/2026</option><option value="m5">Tháng 05/2026</option><option value="y26">Năm 2026</option><option value="custom">Tùy chọn…</option>
           </select></div>
+        <div class="fdrow" style="display:flex;gap:6px">
+          <div class="fitem" style="flex:1;min-width:0"><span class="flabel">Từ ngày</span><input type="date" class="fsel" id="fFrom" value="2026-01-01"></div>
+          <div class="fitem" style="flex:1;min-width:0"><span class="flabel">Đến ngày</span><input type="date" class="fsel" id="fTo" value="2026-08-05"></div>
+        </div>
+        <button id="fReset" style="font-size:11.5px;color:var(--color-text-info);cursor:pointer;background:none;border:none;font-family:inherit;display:flex;align-items:center;gap:6px;padding:4px 2px"><i class="ti ti-rotate-2" style="font-size:14px"></i> Đặt lại bộ lọc</button>
       </div>
     </div>
   </aside>
@@ -279,15 +284,49 @@ const el=id=>document.getElementById(id),q=s=>document.querySelectorAll(s);
 let charts={};
 function upsert(id,cfg){ if(charts[id])charts[id].destroy(); const e=el(id); if(e)charts[id]=new Chart(e,cfg); }
 
-/* ============ BỘ LỌC CÔNG TRÌNH ============ */
-const FS={ct:'all'};
+/* ============ BỘ LỌC CÔNG TRÌNH + THỜI GIAN ============ */
+const FS={ct:'all', from:'2026-01-01', to:'2026-08-05'};
+// tháng nào (index 0..7 = T01..T08) nằm trong khoảng [from,to]
+function monInRange(){
+  const f=new Date(FS.from), t=new Date(FS.to), out=[];
+  for(let i=0;i<8;i++){ const m=new Date(2026,i,15); out.push(m>=f && m<=t); }
+  return out;
+}
+// parse 'dd/mm' hoặc 'dd/mm/yyyy' → Date 2026
+function pDate(s){ const p=s.split('/'); const d=+p[0],m=+p[1]-1,y=p[2]?+p[2]:2026; return new Date(y,m,d); }
+function inRange(dstr){ const d=pDate(dstr); return d>=new Date(FS.from) && d<=new Date(FS.to); }
 // map mã công trình → dữ liệu; lọc theo FS.ct
 function cprojF(){ return FS.ct==='all'?cproj:cproj.filter(p=>p.code===FS.ct); }
 function dprojF(){ return FS.ct==='all'?dproj:dproj.filter(p=>p.code===FS.ct); }
-function jrScope(list){ return FS.ct==='all'?list:list.filter(x=>x.p===FS.ct); }
-function invScope(list){ return FS.ct==='all'?list:list.filter(x=>x.p===FS.ct); }
+function jrScope(list){ return list.filter(x=>(FS.ct==='all'||x.p===FS.ct) && inRange(x.d)); }
+function invScope(list){ return list.filter(x=>(FS.ct==='all'||x.p===FS.ct) && inRange(x.d)); }
 function planScope(list){ return list; } // lịch dự kiến không gắn mã công trình cụ thể
 (function(){ const s=el('fCT'); cproj.forEach(p=>{const o=document.createElement('option');o.value=p.code;o.textContent=p.code+' · '+p.n;s.appendChild(o);}); })();
+
+// Tỷ trọng thu/chi của công trình đang lọc (dùng để scale KPI & biểu đồ tổng)
+const _totThuP=cproj.reduce((a,p)=>a+p.thu,0), _totChiP=cproj.reduce((a,p)=>a+p.chi,0);
+function shareThu(){ if(FS.ct==='all')return 1; const p=cproj.find(x=>x.code===FS.ct); return p?p.thu/_totThuP:0; }
+function shareChi(){ if(FS.ct==='all')return 1; const p=cproj.find(x=>x.code===FS.ct); return p?p.chi/_totChiP:0; }
+// CF theo tháng đã scale theo công trình + lọc theo khoảng ngày
+function cfF(){
+  const st=shareThu(), sc=shareChi(), mr=monInRange();
+  return { thu:CF.thu.map((v,i)=>mr[i]?Math.round(v*st):0), chi:CF.chi.map((v,i)=>mr[i]?Math.round(v*sc):0) };
+}
+// Thu/chi theo đối tượng: nếu lọc công trình, chỉ giữ đối tượng gắn công trình đó (qua nhật ký)
+function ptyThuF(){
+  if(FS.ct==='all') return THU;
+  const names={}; JTHU.filter(x=>x.p===FS.ct).forEach(x=>{ names[x.o]=(names[x.o]||0)+x.a; });
+  const list=Object.keys(names).map(n=>({n,v:names[n]}));
+  return list.length?list:THU.map(x=>({n:x.n,v:Math.round(x.v*shareThu())}));
+}
+function ptyChiF(){
+  if(FS.ct==='all') return CHI;
+  const names={}; JCHI.filter(x=>x.p===FS.ct).forEach(x=>{ names[x.o]=(names[x.o]||0)+x.a; });
+  const list=Object.keys(names).map(n=>({n,v:names[n]}));
+  return list.length?list:CHI.map(x=>({n:x.n,v:Math.round(x.v*shareChi())}));
+}
+// Công nợ theo đối tượng scale theo công trình
+function cnByObj(base, share){ if(FS.ct==='all')return base; return base.map(o=>({n:o.n,a:o.a.map(v=>Math.round(v*share))})); }
 
 /* ============ TRANG DÒNG TIỀN ============ */
 const posA=a=>'rgba(240,128,30,'+a.toFixed(2)+')',negA=a=>'rgba(226,75,74,'+a.toFixed(2)+')',grnA=a=>'rgba(30,158,87,'+a.toFixed(2)+')';
@@ -295,19 +334,25 @@ let cfMode='month',dtMode='net',ptyMode='thu',jr='thu',jrForm='all';
 const net=CF.thu.map((t,i)=>R(t+CF.chi[i])),fci=i=>i>=6;
 
 function renderCfKpi(){
-  const totThu=CF.thu.reduce((a,b)=>a+b,0),totChi=-CF.chi.reduce((a,b)=>a+b,0),netT=totThu-totChi,sodu=OPEN+netT;
-  const duThu=PLAN.filter(p=>p.k).reduce((s,p)=>s+p.a,0),duChi=PLAN.filter(p=>!p.k).reduce((s,p)=>s+p.a,0);
+  const D=cfF();
+  const totThu=D.thu.reduce((a,b)=>a+b,0),totChi=-D.chi.reduce((a,b)=>a+b,0),netT=totThu-totChi;
+  const st=shareThu(), sc=shareChi();
+  const sodu=FS.ct==='all'?(OPEN+netT):netT; // 1 công trình: không có "số dư quỹ" riêng → dùng dòng tiền thuần
+  const duThu=Math.round(PLAN.filter(p=>p.k).reduce((s,p)=>s+p.a,0)*st),duChi=Math.round(PLAN.filter(p=>!p.k).reduce((s,p)=>s+p.a,0)*sc);
+  const suffix=FS.ct==='all'?'':' · '+FS.ct;
   el('cf_kpi').innerHTML=
     '<div class="kpi"><div class="ttl">Dòng tiền thuần YTD</div><div class="big '+(netT>=0?'up':'dn')+'">'+(netT>=0?'+':'')+nf(netT)+'</div><div class="row"><span class="l">Đã thu</span><span class="v">'+nf(totThu)+'</span></div><div class="row"><span class="l">Đã chi</span><span class="v">'+nf(totChi)+'</span></div></div>'
-    +'<div class="kpi"><div class="ttl">Số dư tiền cuối kỳ</div><div class="big">'+nf(sodu)+'</div><div class="row"><span class="l">Đầu kỳ</span><span class="v">'+nf(OPEN)+'</span></div><div class="row"><span class="l">Thay đổi</span><span class="v '+(netT>=0?'up':'dn')+'">'+(netT>=0?'+':'')+nf(netT)+'</span></div></div>'
+    +'<div class="kpi"><div class="ttl">'+(FS.ct==='all'?'Số dư tiền cuối kỳ':'Dòng tiền thuần CT')+'</div><div class="big">'+nf(sodu)+'</div>'+(FS.ct==='all'?'<div class="row"><span class="l">Đầu kỳ</span><span class="v">'+nf(OPEN)+'</span></div><div class="row"><span class="l">Thay đổi</span><span class="v '+(netT>=0?'up':'dn')+'">'+(netT>=0?'+':'')+nf(netT)+'</span></div>':'<div class="row"><span class="l">Công trình</span><span class="v">'+FS.ct+'</span></div>')+'</div>'
     +'<div class="kpi"><div class="ttl">Dự kiến thu 30 ngày</div><div class="big">'+nf(duThu)+'</div><div class="row"><span class="l">Từ nghiệm thu &amp; thu nợ</span><span class="v"></span></div></div>'
     +'<div class="kpi"><div class="ttl">Dự kiến chi 30 ngày</div><div class="big">'+nf(duChi)+'</div><div class="row"><span class="l">NCC, lương, thầu phụ</span><span class="v"></span></div></div>'
-    +'<div class="kpi"><div class="ttl">Dòng tiền dự kiến ròng</div><div class="big '+(duThu-duChi>=0?'up':'dn')+'">'+(duThu-duChi>=0?'+':'')+nf(duThu-duChi)+'</div><div class="row"><span class="l">Số dư dự kiến</span><span class="v">'+nf(sodu+duThu-duChi)+'</span></div></div>';
+    +'<div class="kpi"><div class="ttl">Dòng tiền dự kiến ròng</div><div class="big '+(duThu-duChi>=0?'up':'dn')+'">'+(duThu-duChi>=0?'+':'')+nf(duThu-duChi)+'</div><div class="row"><span class="l">'+(FS.ct==='all'?'Số dư dự kiến':'Công trình')+'</span><span class="v">'+(FS.ct==='all'?nf(sodu+duThu-duChi):FS.ct)+'</span></div></div>';
 }
 function buildCf(){
+  const D=cfF();
+  const netA=D.thu.map((t,i)=>R(t+D.chi[i]));
   let thu,chi,line,lbl;
-  if(cfMode==='month'){thu=CF.thu;chi=CF.chi;line=net;lbl='Dòng tiền thuần';}
-  else{thu=cumu(CF.thu);chi=cumu(CF.chi);const bal=[];net.reduce((a,v,i)=>{const b=R((i?bal[i-1]:OPEN)+v);bal.push(b);return b;},0);line=bal;lbl='Số dư tiền';}
+  if(cfMode==='month'){thu=D.thu;chi=D.chi;line=netA;lbl='Dòng tiền thuần';}
+  else{thu=cumu(D.thu);chi=cumu(D.chi);const bal=[];const op=FS.ct==='all'?OPEN:0;netA.reduce((a,v,i)=>{const b=R((i?bal[i-1]:op)+v);bal.push(b);return b;},0);line=bal;lbl=FS.ct==='all'?'Số dư tiền':'Dòng tiền lũy kế';}
   upsert('cf_chart',{data:{labels:MON,datasets:[
     {type:'bar',label:'Thu',data:thu,backgroundColor:thu.map((_,i)=>fci(i)?GRN+'59':GRN),borderRadius:3,order:2},
     {type:'bar',label:'Chi',data:chi,backgroundColor:chi.map((_,i)=>fci(i)?RD+'59':RD),borderRadius:3,order:2},
@@ -317,7 +362,7 @@ function buildCf(){
   q('.cncf').forEach(b=>b.classList.toggle('on',b.dataset.v===cfMode));
 }
 const dtExp=new Set();
-function cv(t,c,i){const tv=t*msThu[i],cc=c*msChi[i];return dtMode==='thu'?tv:dtMode==='chi'?cc:tv-cc;}
+function cv(t,c,i){const mr=monInRange();if(!mr[i])return 0;const tv=t*msThu[i],cc=c*msChi[i];return dtMode==='thu'?tv:dtMode==='chi'?cc:tv-cc;}
 function colorOf(v,mx){if(dtMode==='net'){const a=0.1+0.55*(Math.abs(v)/mx);return v>=0?posA(a):negA(a);}const a=0.08+0.55*(Math.abs(v)/mx);return dtMode==='thu'?grnA(a):negA(a);}
 function fc2(v){return dtMode==='net'?(v>0?'+':'')+nf(v):nf(v);}
 function renderDtHM(){
@@ -341,7 +386,7 @@ function renderDtHM(){
   q('.cnmd').forEach(b=>b.classList.toggle('on',b.dataset.m===dtMode));
 }
 function buildPty(){
-  const isThu=ptyMode==='thu',list=[...(isThu?THU:CHI)].sort((a,b)=>b.v-a.v),col=isThu?GRN:RD,tot=list.reduce((s,x)=>s+x.v,0);
+  const isThu=ptyMode==='thu',list=[...(isThu?ptyThuF():ptyChiF())].sort((a,b)=>b.v-a.v),col=isThu?GRN:RD,tot=list.reduce((s,x)=>s+x.v,0);
   upsert('cf_pty',{type:'bar',data:{labels:list.map(x=>x.n),datasets:[{data:list.map(x=>x.v),backgroundColor:col,borderRadius:4}]},
     options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>(isThu?'Đã thu: ':'Đã chi: ')+trm(c.parsed.x)+' ('+pc(c.parsed.x,tot)+'%)'}}},
       scales:{x:{grid:{color:grid},ticks:{callback:v=>nf(v)}},y:{grid:{display:false},ticks:{font:{size:10.5}}}}}});
@@ -366,18 +411,29 @@ function renderCF(){ renderCfKpi();buildCf();renderDtHM();buildPty();renderPlan(
 const AG=['#F0801E','#EF9F27','#E67E22','#E24B4A'],AGrgb=[[240,128,30],[239,159,39],[230,126,34],[226,75,74]],BK=['0–30 ngày','31–60 ngày','61–90 ngày','> 90 ngày'];
 const aColor=(c,a)=>'rgba('+AGrgb[c].join(',')+','+a.toFixed(2)+')';
 let agMode='pt';const cnExp=new Set();
+// dư nợ công trình đang lọc / tổng — để scale công nợ theo đối tượng
+function cnShare(key){
+  if(FS.ct==='all')return 1;
+  const tot=dproj.reduce((s,p)=>s+p[key].reduce((a,b)=>a+b,0),0);
+  const p=dproj.find(x=>x.code===FS.ct);
+  return (p&&tot)?p[key].reduce((a,b)=>a+b,0)/tot:0;
+}
+function PToF(){ return cnByObj(PTo, cnShare('pt')); }
+function PTroF(){ return cnByObj(PTro, cnShare('ptr')); }
 function renderCnKpi(){
-  const sumPT=PTo.reduce((s,o)=>s+o.a.reduce((a,b)=>a+b,0),0),odPT=PTo.reduce((s,o)=>s+o.a[2]+o.a[3],0);
-  const sumPTr=PTro.reduce((s,o)=>s+o.a.reduce((a,b)=>a+b,0),0),odPTr=PTro.reduce((s,o)=>s+o.a[2]+o.a[3],0);
+  const _PTo=PToF(), _PTro=PTroF();
+  const sumPT=_PTo.reduce((s,o)=>s+o.a.reduce((a,b)=>a+b,0),0),odPT=_PTo.reduce((s,o)=>s+o.a[2]+o.a[3],0);
+  const sumPTr=_PTro.reduce((s,o)=>s+o.a.reduce((a,b)=>a+b,0),0),odPTr=_PTro.reduce((s,o)=>s+o.a[2]+o.a[3],0);
   el('cn_kpi').innerHTML=
     '<div class="kpi"><div class="ttl">Công nợ phải thu</div><div class="big">'+nf(sumPT)+'</div><div class="row"><span class="l">Quá hạn (&gt;60 ngày)</span><span class="v dn">'+nf(odPT)+'</span></div><div class="row"><span class="l">Tỉ lệ quá hạn</span><span class="v">'+pc(odPT,sumPT)+'%</span></div></div>'
     +'<div class="kpi"><div class="ttl">Công nợ phải trả</div><div class="big">'+nf(sumPTr)+'</div><div class="row"><span class="l">Quá hạn (&gt;60 ngày)</span><span class="v" style="color:var(--color-text-warning)">'+nf(odPTr)+'</span></div><div class="row"><span class="l">Tỉ lệ quá hạn</span><span class="v">'+pc(odPTr,sumPTr)+'%</span></div></div>'
-    +'<div class="kpi"><div class="ttl">Công nợ ròng</div><div class="big up">+'+nf(sumPT-sumPTr)+'</div><div class="row"><span class="l">Phải thu</span><span class="v">'+nf(sumPT)+'</span></div><div class="row"><span class="l">Phải trả</span><span class="v">'+nf(sumPTr)+'</span></div></div>'
-    +'<div class="kpi"><div class="ttl">Nợ quá hạn phải thu</div><div class="big dn">'+nf(odPT)+'</div><div class="row"><span class="l">61–90 ngày</span><span class="v">'+nf(PTo.reduce((s,o)=>s+o.a[2],0))+'</span></div><div class="row"><span class="l">&gt; 90 ngày</span><span class="v dn">'+nf(PTo.reduce((s,o)=>s+o.a[3],0))+'</span></div></div>'
+    +'<div class="kpi"><div class="ttl">Công nợ ròng</div><div class="big '+(sumPT-sumPTr>=0?'up':'dn')+'">'+(sumPT-sumPTr>=0?'+':'')+nf(sumPT-sumPTr)+'</div><div class="row"><span class="l">Phải thu</span><span class="v">'+nf(sumPT)+'</span></div><div class="row"><span class="l">Phải trả</span><span class="v">'+nf(sumPTr)+'</span></div></div>'
+    +'<div class="kpi"><div class="ttl">Nợ quá hạn phải thu</div><div class="big dn">'+nf(odPT)+'</div><div class="row"><span class="l">61–90 ngày</span><span class="v">'+nf(_PTo.reduce((s,o)=>s+o.a[2],0))+'</span></div><div class="row"><span class="l">&gt; 90 ngày</span><span class="v dn">'+nf(_PTo.reduce((s,o)=>s+o.a[3],0))+'</span></div></div>'
     +'<div class="kpi"><div class="ttl">Số ngày thu BQ (DSO)</div><div class="big">58 <small style="font-size:12px;font-weight:400;color:var(--color-text-tertiary)">ngày</small></div><div class="row"><span class="l">Kỳ trước</span><span class="v">52 ngày</span></div><div class="row"><span class="l">Mục tiêu</span><span class="v">≤ 45 <span class="bdg bM">Theo dõi</span></span></div></div>';
 }
 function buildCnCharts(){
-  const list=[...(agMode==='pt'?PTo:PTro)].sort((x,y)=>y.a.reduce((s,v)=>s+v,0)-x.a.reduce((s,v)=>s+v,0));
+  const src=agMode==='pt'?PToF():PTroF();
+  const list=[...src].filter(o=>o.a.reduce((s,v)=>s+v,0)>0).sort((x,y)=>y.a.reduce((s,v)=>s+v,0)-x.a.reduce((s,v)=>s+v,0));
   const bucket=[0,1,2,3].map(i=>R(list.reduce((s,o)=>s+o.a[i],0)));
   upsert('cn_agL',{type:'bar',data:{labels:BK,datasets:[{data:bucket,backgroundColor:AG,borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>nf(c.parsed.y)+' tr ('+pc(c.parsed.y,bucket.reduce((a,b)=>a+b,0))+'%)'}}},scales:{x:{grid:{display:false}},y:{grid:{color:grid},ticks:{callback:v=>nf(v)}}}}});
   upsert('cn_agR',{type:'bar',data:{labels:list.map(o=>o.n),datasets:BK.map((b,i)=>({label:b,data:list.map(o=>o.a[i]),backgroundColor:AG[i],stack:'s',borderWidth:0.5,borderColor:'rgba(255,255,255,0.5)'}))},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.dataset.label+': '+nf(c.parsed.x)+' tr'}}},scales:{x:{stacked:true,grid:{color:grid},ticks:{callback:v=>nf(v)}},y:{stacked:true,grid:{display:false},ticks:{font:{size:10}}}}}});
@@ -424,12 +480,26 @@ function showPage(id){
   if(id==='cf')renderCF(); if(id==='cn')renderCN();
 }
 function reRender(){ if(curPage==='cf')renderCF(); else renderCN(); }
+function syncRangeLabel(){
+  const f=FS.from.split('-').reverse().join('/').slice(0,5), t=FS.to.split('-').reverse().join('/');
+  q('.frange').forEach(el2=>el2.innerHTML='<i class="ti ti-calendar"></i> '+f+' → '+t);
+}
 q('#nav button').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
 el('fCT').addEventListener('change',e=>{FS.ct=e.target.value;reRender();});
 el('fPeriod').addEventListener('change',e=>{
-  const map={'Lũy kế từ đầu năm':'01/01 → 05/08/2026','Quý II/2026':'01/04 → 30/06/2026','Tháng 05/2026':'01/05 → 31/05/2026','Năm 2026':'01/01 → 31/12/2026'};
-  const txt=map[e.target.value]||'01/01 → 05/08/2026';
-  q('.frange').forEach(el2=>el2.innerHTML='<i class="ti ti-calendar"></i> '+txt);
+  const presets={ytd:['2026-01-01','2026-08-05'],q2:['2026-04-01','2026-06-30'],m5:['2026-05-01','2026-05-31'],y26:['2026-01-01','2026-12-31']};
+  if(e.target.value!=='custom' && presets[e.target.value]){
+    FS.from=presets[e.target.value][0]; FS.to=presets[e.target.value][1];
+    el('fFrom').value=FS.from; el('fTo').value=FS.to;
+    syncRangeLabel(); reRender();
+  }
+});
+el('fFrom').addEventListener('change',e=>{FS.from=e.target.value;el('fPeriod').value='custom';syncRangeLabel();reRender();});
+el('fTo').addEventListener('change',e=>{FS.to=e.target.value;el('fPeriod').value='custom';syncRangeLabel();reRender();});
+el('fReset').addEventListener('click',()=>{
+  FS.ct='all';FS.from='2026-01-01';FS.to='2026-08-05';
+  el('fCT').value='all';el('fPeriod').value='ytd';el('fFrom').value=FS.from;el('fTo').value=FS.to;
+  syncRangeLabel();reRender();
 });
 q('.cncf').forEach(b=>b.addEventListener('click',()=>{cfMode=b.dataset.v;buildCf();}));
 q('.cnmd').forEach(b=>b.addEventListener('click',()=>{dtMode=b.dataset.m;renderDtHM();}));
