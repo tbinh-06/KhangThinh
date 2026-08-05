@@ -718,13 +718,6 @@ function renderPage3(){
   drill('ctHM');
 }
 
-/* ============ FILTER VISIBILITY per page ============ */
-function updateFilterVisibility(page){
-  el('wrapNhomVT').style.display = (page==='p2')?'flex':'none';
-  el('wrapHangMuc').style.display = (page==='p3')?'flex':'none';
-  el('wrapDoi').style.display = (page==='p3')?'flex':'none';
-}
-
 /* ============ NAV ============ */
 let currentPage='p1';
 function showPage(id){
@@ -732,7 +725,6 @@ function showPage(id){
   document.querySelectorAll('.page').forEach(p=>p.style.display='none');
   el('page-'+id).style.display='block';
   document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.page===id));
-  updateFilterVisibility(id);
   if(id==='p1')renderPage1();
   if(id==='p2')renderPage2();
   if(id==='p3')renderPage3();
@@ -742,9 +734,9 @@ document.querySelectorAll('#nav button').forEach(b=>b.addEventListener('click',(
 /* ============ FILTER WIRING (lọc data thật) ============ */
 function reRender(){ if(currentPage==='p1')renderPage1(); if(currentPage==='p2')renderPage2(); if(currentPage==='p3')renderPage3(); }
 el('fCongTrinh').addEventListener('change',e=>{FS.congTrinh=e.target.value;reRender();});
-el('fNhomVT').addEventListener('change',e=>{FS.nhomVT=e.target.value;renderPage2();});
-el('fHangMuc').addEventListener('change',e=>{FS.hangMuc=e.target.value;renderPage3();});
-el('fDoi').addEventListener('change',e=>{FS.doi=e.target.value;renderPage3();});
+el('fNhomVT').addEventListener('change',e=>{FS.nhomVT=e.target.value;reRender();});
+el('fHangMuc').addEventListener('change',e=>{FS.hangMuc=e.target.value;reRender();});
+el('fDoi').addEventListener('change',e=>{FS.doi=e.target.value;reRender();});
 el('fReset').addEventListener('click',()=>{
   FS.congTrinh='all';FS.nhomVT='all';FS.hangMuc='all';FS.doi='all';
   el('fCongTrinh').value='all';el('fNhomVT').value='all';el('fHangMuc').value='all';el('fDoi').value='all';
