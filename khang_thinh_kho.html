@@ -286,28 +286,60 @@ function barCompare(id,labels,plan,act){
 const MON=['T1','T2','T3','T4','T5','T6','T7','T8'];
 const NHOM=['Thép hình','Thép tấm','Thép hộp','Bu lông','Que hàn','Sơn','Tôn'];
 
+/* ============ BỘ LỌC (Kho + Kỳ) ============ */
+const FILTER={kho:'all', period:'ytd'};
+// Tỷ trọng theo kho: HCM ~62%, Vũng Tàu ~38%
+function khoW(){ return FILTER.kho==='hcm'?0.62 : FILTER.kho==='vt'?0.38 : 1; }
+// Số tháng hiển thị theo kỳ (mảng index tháng 0..7 = T1..T8)
+function perMonths(){
+  switch(FILTER.period){
+    case 'q2': return [3,4,5];        // T4-T6
+    case 'm7': return [6];            // T7
+    case 'y26': return [0,1,2,3,4,5,6,7];
+    default: return [0,1,2,3,4,5,6,7]; // ytd
+  }
+}
+// scale 1 giá trị theo kho
+const s1=v=>Math.round(v*khoW());
+// scale 1 mảng theo kho
+const sA=a=>a.map(s1);
+// mảng tháng: chỉ giữ tháng trong kỳ (các tháng ngoài kỳ = null để chart bỏ qua), + scale kho
+function sMon(a){ const keep=new Set(perMonths()); return a.map((v,i)=>keep.has(i)?s1(v):null); }
+// labels tháng theo kỳ
+function monLabels(){ const keep=perMonths(); return keep.map(i=>MON[i]); }
+// lấy phần con của mảng tháng theo kỳ + scale
+function subMon(a){ return perMonths().map(i=>s1(a[i])); }
+// nhãn kho cho tiêu đề
+function khoLabel(){ return FILTER.kho==='hcm'?' · Kho HCM':FILTER.kho==='vt'?' · Kho Vũng Tàu':''; }
+
 /* ============ TRANG 1 ============ */
 function buildP1(){
-  comboXNT('c11',MON,
-    [3800,4200,5100,4600,5300,6100,6800,6900],
-    [3400,3800,4600,4200,4900,5600,6200,5500],
-    [22000,23400,24900,25300,25700,26200,26800,28400]);
-  donut('c12',['Thép hình','Thép tấm','Thép hộp','Bu lông','Sơn','Khác'],[11400,7800,4200,2100,1600,1300],[cNavy,cBlue,cBlueL,cAmber,cOrange,'#8FBEEC']);
-  barH('c13',['Kho HCM','Kho Vũng Tàu'],[18400,10000],cOrange,' tr');
-  donut('c14',['Đang hoạt động','Tồn lâu ngày','Cần thanh lý'],[86,18,12],[cGreen,cAmber,cRed]);
-  gauge('c15',78);
-  barH('c16',['Thép hình','Thép tấm','Thép hộp','Bu lông','Sơn'],[18500,8200,6100,2200,1800],cGreen,' tr');
-  barH('c17',['Thép hình','Thép tấm','Thép hộp','Que hàn','Sơn'],[15200,7800,5500,2100,1600],cBlue,' tr');
+  comboXNT('c11',monLabels(),
+    subMon([3800,4200,5100,4600,5300,6100,6800,6900]),
+    subMon([3400,3800,4600,4200,4900,5600,6200,5500]),
+    subMon([22000,23400,24900,25300,25700,26200,26800,28400]));
+  donut('c12',['Thép hình','Thép tấm','Thép hộp','Bu lông','Sơn','Khác'],sA([11400,7800,4200,2100,1600,1300]),[cNavy,cBlue,cBlueL,cAmber,cOrange,'#8FBEEC']);
+  // Phân bổ theo kho: nếu lọc 1 kho thì chỉ hiện kho đó
+  const khoNames=FILTER.kho==='hcm'?['Kho HCM']:FILTER.kho==='vt'?['Kho Vũng Tàu']:['Kho HCM','Kho Vũng Tàu'];
+  const khoVals=FILTER.kho==='hcm'?[18400]:FILTER.kho==='vt'?[10000]:[18400,10000];
+  barH('c13',khoNames,khoVals,cOrange,' tr');
+  // Số mã VT theo trạng thái — scale số lượng theo kho
+  donut('c14',['Đang hoạt động','Tồn lâu ngày','Cần thanh lý'],sA([86,18,12]),[cGreen,cAmber,cRed]);
+  // Tỷ lệ lấp đầy: HCM cao hơn (82%), Vũng Tàu (71%), tất cả (78%)
+  gauge('c15',FILTER.kho==='hcm'?82:FILTER.kho==='vt'?71:78);
+  barH('c16',['Thép hình','Thép tấm','Thép hộp','Bu lông','Sơn'],sA([18500,8200,6100,2200,1800]),cGreen,' tr');
+  barH('c17',['Thép hình','Thép tấm','Thép hộp','Que hàn','Sơn'],sA([15200,7800,5500,2100,1600]),cBlue,' tr');
 }
 
 /* ============ TRANG 2 ============ */
 const ORD=['DH-088','DH-081','DH-079','DH-076','DH-074','DH-069','DH-063','DH-061'];
 function buildP2(){
-  barCompare('c21',ORD,[9000,5600,3800,2400,4200,1300,1500,600],[9200,5600,3900,2300,4800,1350,1600,580]);
+  barCompare('c21',ORD,sA([9000,5600,3800,2400,4200,1300,1500,600]),sA([9200,5600,3900,2300,4800,1350,1600,580]));
   barH('c22',['DH-074: 114%','DH-088: 102%','DH-079: 103%','DH-069: 104%','DH-063: 107%'],[114,102,103,104,107],cOrange,'%');
-  donut('c23',['Thép hình','Thép tấm','Thép hộp','Phụ kiện'],[52,28,12,8]);
-  lineC('c24',['W1','W2','W3','W4','W5','W6','W7','W8'],[{n:'Xuất',d:[820,910,750,1020,880,950,1120,980],c:cBlue}],' tr');
-  barH('c25',['Thép hình','Bu lông','Que hàn','Sơn','Thép hộp'],[35,28,18,12,8],cRed,' tr');
+  donut('c23',['Thép hình','Thép tấm','Thép hộp','Phụ kiện'],
+    FILTER.kho==='hcm'?[56,24,12,8]:FILTER.kho==='vt'?[44,34,14,8]:[52,28,12,8]);
+  lineC('c24',['W1','W2','W3','W4','W5','W6','W7','W8'],[{n:'Xuất',d:sA([820,910,750,1020,880,950,1120,980]),c:cBlue}],' tr');
+  barH('c25',['Thép hình','Bu lông','Que hàn','Sơn','Thép hộp'],sA([35,28,18,12,8]),cRed,' tr');
   const rows2=[
     ['DH-26/074','Kèo thép Coteccons','4.200','4.800','114,3%','Thép hình H350, Bu lông','<span class="badge b-danger">Vượt mức</span>'],
     ['DH-26/063','Nhà kho Sao Mai','1.500','1.600','106,7%','Tôn, Que hàn','<span class="badge b-warn">Cảnh báo</span>'],
@@ -321,12 +353,14 @@ function buildP2(){
 function buildP3(){
   donut('c31',['<30 ngày','30-90 ngày','>90 ngày'],[45,28,27],[cGreen,cAmber,cRed]);
   stacked('c32',NHOM,[
-    {n:'<30 ngày',d:[4000,2000,1500,600,400,700,900]},
-    {n:'30-90 ngày',d:[1500,800,700,300,200,300,500]},
-    {n:'>90 ngày',d:[1000,500,600,400,300,200,400]}]);
+    {n:'<30 ngày',d:sA([4000,2000,1500,600,400,700,900])},
+    {n:'30-90 ngày',d:sA([1500,800,700,300,200,300,500])},
+    {n:'>90 ngày',d:sA([1000,500,600,400,300,200,400])}]);
   barH('c33',['THH-350-A','THT-12-B','THO-100-C','BLG-M24-D','THH-400-E','TON-05-F','QH-32-G','SON-JT-H','THT-16-I','BLG-M20-J'],[245,220,198,185,172,165,158,150,142,138],cRed,' ngày');
   donut('c34',['Gỉ sét','Lỗi thời/dư','Chậm luân chuyển'],[15,35,50],[cRed,cAmber,cBlue]);
-  barH('c35',['Kho HCM','Kho Vũng Tàu'],[82,71],cNavy,' ngày');
+  const k35n=FILTER.kho==='hcm'?['Kho HCM']:FILTER.kho==='vt'?['Kho Vũng Tàu']:['Kho HCM','Kho Vũng Tàu'];
+  const k35v=FILTER.kho==='hcm'?[82]:FILTER.kho==='vt'?[71]:[82,71];
+  barH('c35',k35n,k35v,cNavy,' ngày');
   lineC('c36',['T3','T4','T5','T6','T7','T8'],[{n:'Tuổi TB',d:[72,73,75,76,77,78],c:cAmber}],' ngày');
   barH('c37',['Bu lông M16 cũ','Sơn lót hết hạn','Que hàn ẩm','Van khóa','Đầu nối tôn'],[180,165,150,142,135],cAmber,' ngày');
 }
@@ -334,11 +368,11 @@ function buildP3(){
 /* ============ TRANG 4 ============ */
 function buildP4(){
   lineC('c41',['Tuần 1','Tuần 2','Tuần 3','Tuần 4','D.kiến'],[
-    {n:'Khả năng đáp ứng',d:[15600,14500,13200,12000,9500],c:cGreen},
-    {n:'Nhu cầu xuất',d:[10000,12000,13500,14000,15000],c:cRed}],' tr');
+    {n:'Khả năng đáp ứng',d:sA([15600,14500,13200,12000,9500]),c:cGreen},
+    {n:'Nhu cầu xuất',d:sA([10000,12000,13500,14000,15000]),c:cRed}],' tr');
   donut('c42',['Đầy đủ','Cảnh báo','Thiếu hụt'],[70,20,10],[cGreen,cAmber,cRed]);
-  barH('c43',['Thép hình H350','Bu lông M24','Thép tấm 12mm','Que hàn','Sơn epoxy'],[3300,2500,1800,1200,800],cRed,' kg');
-  barDemand('c44',['Thép hình','Thép tấm','Thép hộp','Bu lông','Sơn'],[450,250,180,120,80],[650,350,220,150,100]);
+  barH('c43',['Thép hình H350','Bu lông M24','Thép tấm 12mm','Que hàn','Sơn epoxy'],sA([3300,2500,1800,1200,800]),cRed,' kg');
+  barDemand('c44',['Thép hình','Thép tấm','Thép hộp','Bu lông','Sơn'],sA([450,250,180,120,80]),sA([650,350,220,150,100]));
   const rows4=[
     ['THH-350','Thép hình H350×175','1.200 kg','4.500 kg','-3.300 kg','<span class="badge b-danger">Khẩn cấp</span>'],
     ['BLG-M24','Bu lông cường độ cao M24','800 bộ','3.300 bộ','-2.500 bộ','<span class="badge b-danger">Khẩn cấp</span>'],
@@ -350,11 +384,12 @@ function buildP4(){
 
 /* ============ TRANG 5 ============ */
 function buildP5(){
-  lineC('c51',MON,[{n:'Giá trị nhập',d:[3800,4200,5100,4600,5300,6100,6800,6900],c:cOrange}],' tr');
-  donut('c52',['Thép hình','Thép tấm','Thép hộp','Khác'],[45,28,15,12],[cNavy,cBlue,cBlueL,cAmber]);
+  lineC('c51',monLabels(),[{n:'Giá trị nhập',d:subMon([3800,4200,5100,4600,5300,6100,6800,6900]),c:cOrange}],' tr');
+  donut('c52',['Thép hình','Thép tấm','Thép hộp','Khác'],
+    FILTER.kho==='hcm'?[50,25,15,10]:FILTER.kho==='vt'?[38,34,16,12]:[45,28,15,12],[cNavy,cBlue,cBlueL,cAmber]);
   donut('c53',['Đã nhập','Đang xử lý','Quá hạn'],[38,4,3],[cGreen,cAmber,cRed]);
-  barH('c54',['Hòa Phát','Formosa','Posco','Hoa Sen','Jotun'],[5200,3800,2500,1800,1200],cNavy,' tr');
-  barV('c55',['W1','W2','W3','W4'],[{n:'Số đơn',d:[12,14,10,11],c:cOrange}],' đơn');
+  barH('c54',['Hòa Phát','Formosa','Posco','Hoa Sen','Jotun'],sA([5200,3800,2500,1800,1200]),cNavy,' tr');
+  barV('c55',['W1','W2','W3','W4'],[{n:'Số đơn',d:sA([12,14,10,11]),c:cOrange}],' đơn');
   const rows5=[
     ['PN-210','Thép hình H400','Hòa Phát','120 tấn','4.200','20/07/2026','<span class="badge b-ok">Đã nhập</span>'],
     ['PN-208','Thép tấm 12mm','Formosa Hà Tĩnh','80 tấn','1.800','21/07/2026','<span class="badge b-ok">Đã nhập</span>'],
@@ -367,17 +402,25 @@ function buildP5(){
 
 const BUILDERS={p1:buildP1,p2:buildP2,p3:buildP3,p4:buildP4,p5:buildP5};
 const TITLES={p1:'Tổng quan Xuất - Nhập - Tồn',p2:'Xuất vật tư theo đơn hàng',p3:'Tồn kho & tuổi tồn',p4:'Khả năng đáp ứng nhu cầu',p5:'Báo cáo nhập kho'};
-const built={};
+const PERLABEL={ytd:'01/01 → 05/08/2026',q2:'01/04 → 30/06/2026',m7:'01/07 → 31/07/2026',y26:'01/01 → 31/12/2026'};
+let curPage='p1';
+function updateBanner(){
+  document.getElementById('pageTitle').textContent=TITLES[curPage]+khoLabel();
+  const fr=document.querySelector('.frange'); if(fr)fr.innerHTML='<i class="ti ti-calendar"></i> '+(PERLABEL[FILTER.period]||PERLABEL.ytd);
+}
 function showPage(id){
+  curPage=id;
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
   document.getElementById(id).classList.add('on');
   document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.page===id));
-  document.getElementById('pageTitle').textContent=TITLES[id];
-  setTimeout(()=>{ BUILDERS[id](); built[id]=true; },30);
+  updateBanner();
+  setTimeout(()=>{ BUILDERS[id](); },30);
 }
 document.querySelectorAll('#nav button').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
+document.getElementById('fKho').addEventListener('change',e=>{FILTER.kho=e.target.value;updateBanner();BUILDERS[curPage]();});
+document.getElementById('fPeriod').addEventListener('change',e=>{FILTER.period=e.target.value;updateBanner();BUILDERS[curPage]();});
 window.addEventListener('resize',()=>{Object.values(inst).forEach(c=>{try{c.resize();}catch(e){}});});
-buildP1();built.p1=true;
+updateBanner();buildP1();
 </script>
 </body>
 </html>
